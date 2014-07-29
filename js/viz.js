@@ -155,7 +155,7 @@ function create_trend_chart(series){
 
 // Generate Gender Breakdown chart
 
-function create_gender_charts(series, year){
+function create_gender_chart(series, year){
   console.log(series)
   $(function () {
         $('#gender_chart').highcharts({
@@ -233,6 +233,8 @@ d3.json("data.json", function(error, json) {
     //a. Create General Trend Chart
       create_trend_chart(trend_data);
     //b. Create Gender Break Down Chart 
-      create_gender_charts(gender_series, default_year);
+      create_gender_chart(gender_series, default_year);
+    //c. Create Gender/Race Break Down Chart
+      create_gr_chart();
 });
 
