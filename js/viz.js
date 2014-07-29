@@ -1,5 +1,6 @@
 //------------- Resources -----------------
-//Epoch seconds are Unix timestamps which rickshaw relies on for displaying years on the x axis
+// Fields of Study Mappings
+var data;
 var fields_of_study_totals = [
         "Biological Sciences/Life Sciences - Total",
         "Business Management and Administrative Services - Total",
@@ -22,47 +23,50 @@ var fields_of_study_formatted = [
         "Mathematics",
         "Physical Sciences"];
 
-//Used for mapping categorial values for X axsis 
-var field_map = {"Biological Sciences/Life Sciences - Total" : 1,
-  "Business Management and Administrative Services - Total" : 2,
-  "Dentistry - Total" : 3,
-  "Education - Total" : 4,
-  "Engineering - Total" : 5,
-  "Law - Total" : 6,
-  "Medicine - Total" : 7,
-  "Mathematics - Total" : 8,
-  "Physical Sciences - Total" : 9};
+var races_2006 = [
+"American Indian or Alaska Native total",
+"Asian or Pacific Islander total",
+"Black non-Hispanic total",
+"Hispanic total",
+"Race/ethnicity unknown total",
+"White non-Hispanic total",
+];
 
-  var field_map_reverse = { 
-              1 : "Bio/Life",
-              2 : "Business",
-              3 : "Dentistry",
-              4: "Education",
-              5: "Engineering - Total",
-              6: "Law - Total",
-              7: "Medicine - Total",
-              8: "Mathematics - Total",
-              9: "Physical Sciences - Total"};
+var races_2008 = [
+"American Indian or Alaska Native total - derived",
+"Asian/Native Hawaiian/Other Pacific Islander total - derived",
+"Black or African American/Black non-Hispanic total - derived", 
+"Hispanic or Latino/Hispanic total - derived",
+"Native Hawaiian or Other Pacific Islander total - new",
+"Race/ethnicity unknown total",
+"White/White non-Hispanic total - derived"
+];
 
+var races_2010 = [
+"American Indian or Alaska Native total",
+"Asian total",
+"Black or African American total",
+"Hispanic total",
+"Native Hawaiian or Other Pacific Islander total",
+"Race/ethnicity unknown total",
+"White total"
+];
 
-var fields_of_study = [
-        "Biological Sciences/Life Sciences - Graduate",
-        "Biological Sciences/Life Sciences - Total",
-        "Biological Sciences/Life Sciences - Undergraduate",
-        "Business Management and Administrative Services - Total",
-        "Dentistry - Total",
-        "Education - Total",
-        "Engineering - Graduate",
-        "Engineering - Total",
-        "Engineering - Undergraduate",
-        "Law - Total",
-        "Mathematics - Graduate",
-        "Mathematics - Total",
-        "Mathematics - Undergraduate",
-        "Medicine - Total",
-        "Physical Sciences - Graduate",
-        "Physical Sciences - Total",
-        "Physical Sciences - Undergraduate"]
+var races_2012 = [
+"American Indian or Alaska Native total",
+"Asian total",
+"Black or African American total",
+"Hispanic total",
+"Native Hawaiian or Other Pacific Islander total",
+"Race/ethnicity unknown total",
+"White total"
+];
+
+var race_values = {2006 : races_2006, 2008 : races_2008, 2010 : races_2010, 2012 : races_2012};
+
+// 
+
+//------------------------------------------------------------
 
 // Get trend data 
 function create_trend_plots(years, field) {
@@ -107,11 +111,40 @@ function create_gender_series(year, data) {
 
       });
 
-      gender_plots = [{ name: "Men", data: men_series},
-                      { name: "Women", data: women_series}];
+      gender_plots = [{ name: "Men", data: men_series, color: "#4682B4"},
+                      { name: "Women", data: women_series, color: "#BA55D3"}];
       return gender_plots;
        
 } 
+
+function create_gr_series(year, field, data){
+  var men_series = [];
+  var women_series = [];
+  year = 2010;  
+  var race_index = race_values[year];
+  $.each(race_index, function(index, race){
+          // For automation of pulling in race categories. Strip the word total at the end
+          race_base = race.split("total")[0];
+          //get totals by race for each gender
+            try{
+               men_total = data[year]["Fields of Study"][field][race_base + "men"];
+               women_total = data[year]["Fields of Study"][field][race_base + "women"];
+             }
+             catch(err)
+             {
+              men_total = '0';
+              women_total = '0';
+             }
+             
+
+            men_series.push(men_total);
+            women_series.push(women_total); 
+        });
+        var plot_data = [{name :"Women", data: women_series, color: "#BA55D3"},{name: "Men", data: men_series, color: "#4682B4"}];
+        return plot_data;
+}
+
+//----------------------------------------------------------
 
 // Generate Charts using HighCharts Library
 
@@ -142,10 +175,17 @@ function create_trend_chart(series){
                 valueSuffix: ' Students'
             },
             legend: {
+                title: {text: 'Legend (Click to legend value to filter)'},
                 layout: 'vertical',
                 align: 'right',
                 verticalAlign: 'middle',
-                borderWidth: 0
+                borderWidth: 0,
+                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF'),
+                shadow: true
+
+            },
+            credits: {
+                enabled: false
             },
             series: series
         });
@@ -156,14 +196,16 @@ function create_trend_chart(series){
 // Generate Gender Breakdown chart
 
 function create_gender_chart(series, year){
-  console.log(series)
+  //Define html dropdown to display years as UI feature
+  
+
   $(function () {
         $('#gender_chart').highcharts({
             chart: {
                 type: 'bar'
             },
             title: {
-                text: 'Field of Study Breakdowns by Gender'
+                text: 'Field of Study Breakdown by Gender'
             },
             subtitle: {
                 text: 'Total Enrollment by Gender for the year ' + year,
@@ -195,13 +237,12 @@ function create_gender_chart(series, year){
                 }
             },
             legend: {
+                title: {text: 'Legend (Click to legend value to filter) <br>'},
+                align: 'right',
                 layout: 'vertical',
                 align: 'right',
-                verticalAlign: 'top',
-                x: -30,
-                y: 100,
-                floating: true,
-                borderWidth: 1,
+                verticalAlign: 'middle',
+                borderWidth: 0,
                 backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF'),
                 shadow: true
             },
@@ -212,6 +253,70 @@ function create_gender_chart(series, year){
         });
     });
 }
+
+
+//-----------------------------------------------------------
+
+// Create Gender/Race Breakdown Charts
+function create_gr_chart(field, year, series){
+  
+  race_unformatted = race_values[year];
+  race_formatted = [];
+  $.each(race_unformatted, function(index, race){
+      race_formatted.push(race.split("total")[0]);
+  })  
+
+  $(function () {
+        $('#race_gender_chart').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Breakdown of Race and Gender by Field of Study'
+            },
+            subtitle: {
+                text: field + " Enrollments in " + year,
+            },
+            xAxis: {
+                categories: race_formatted,
+                 title: {
+                    text: "Race / Ethnicity"
+                }
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: "% Male / Female"
+                }
+            },
+            tooltip: {
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>{point.y}</b> ({point.percentage:.0f}%)<br/>',
+                shared: true
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                title: {text: 'Legend (Click to legend value to filter)'},
+                align: 'right',
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'middle',
+                borderWidth: 0,
+                backgroundColor: (Highcharts.theme && Highcharts.theme.legendBackgroundColor || '#FFFFFF'),
+                shadow: true
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'percent'
+                }
+            },
+                series: series
+        });
+    });
+
+}
+
 //-----------------------------------------------------
 
 
@@ -229,12 +334,63 @@ d3.json("data.json", function(error, json) {
       //b. Generate plot points for Gender Graph
             default_year = '2012' // default year, user can select another year with UI dropdown
             gender_series = create_gender_series(default_year, data);
+      //c. Generate plots points for Gender/Race Graph
+          default_field = fields_of_study_totals[0]; //Take first item in list of fields and set as default
+          gr_series = create_gr_series(default_year, default_field, data);
   // 2. Create Charts
     //a. Create General Trend Chart
       create_trend_chart(trend_data);
     //b. Create Gender Break Down Chart 
       create_gender_chart(gender_series, default_year);
     //c. Create Gender/Race Break Down Chart
-      create_gr_chart();
+      create_gr_chart(default_field, default_year, gr_series);
 });
 
+
+//Interactiviy Effects
+//Listen for year selections on the gender chart
+$( "#gender_year" )
+  .change(function () {
+
+    var selected_year =" ";
+    $( "#gender_year option:selected" ).each(function() {
+      selected_year = $( this ).val();
+      //1. Create a new series of gender data for selected year
+        gender_series = create_gender_series(selected_year, data);
+      //2. Redraw new chart
+        create_gender_chart(gender_series, selected_year);
+    });
+  })
+  .change()
+
+// Listen for years selections on the Gender/Race chart
+  $( "#gr_year" )
+  .change(function () {
+    var selected_field = " ";
+    $( "#gr_year option:selected" ).each(function() {
+      selected_year = $( this ).val();
+      selected_field = $("#gr_study").val();
+
+      gr_series = create_gr_series(selected_year, selected_field, data);
+      create_gr_chart(selected_field, selected_year, gr_series);
+      
+    });
+  })
+  .change()
+  
+// Listen for field of study selections on the Gender/Race chart
+  $( "#gr_study" )
+  .change(function () {
+    var selected_field = " ";
+    $( "#gr_study option:selected" ).each(function() {
+      selected_field = $( this ).val();
+      selected_year = $("#gr_year").val();
+
+      gr_series = create_gr_series(selected_year, selected_field, data);
+      create_gr_chart(selected_field, selected_year, gr_series);
+      
+    });
+  })
+  .change()
+
+  

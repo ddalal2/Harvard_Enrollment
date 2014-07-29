@@ -55,7 +55,7 @@
     <div class="container">
 
       <div class="starter-template">
-        <h1>Harvard Enrollment Trends</h1>
+        <h1>Harvard Enrollment Visualizations</h1>
         <hr>
         
         <br>
@@ -65,20 +65,50 @@
         <hr>
         <br>
         <div id = "square_box">
-          <div id="gender_chart" style="width:100%; height:400px;"></div>
+          Select Year: 
+          <select id = "gender_year">
+              <option value="2006">2006</option>
+              <option value="2008">2008</option>
+              <option value="2010">2010</option>
+              <option value="2012" selected = "selected">2012</option>
+            </select>
+          <div id="gender_chart" style="width:100%; height:400px;">
+
+          </div>
         </div>
 
         <hr>
         <br>
         <div id = "square_box">
-          <div id="race_gender_chart" style="width:100%; height:400px;"></div>
+           Select Year: 
+           <select id = "gr_year">
+              <option value="2006">2006</option>
+              <option value="2008">2008</option>
+              <option value="2010">2010</option>
+              <option value="2012" selected = "selected">2012</option>
+            </select>
+
+            | Field of Study : 
+            <select id = "gr_study">
+              <option value="Biological Sciences/Life Sciences - Total" selected = "selected">Biological Sciences/Life Sciences </option>
+              <option value="Business Management and Administrative Services - Total">Business Management and Administrative Services</option>
+              <option value="Dentistry - Tota">Dentistry</option>
+              <option value="Education - Total">Education</option>
+              <option value="Engineering - Total">Engineering</option>
+              <option value="Law - Total">Law - Total</option>
+              <option value="Medicine - Total">Medicine</option>
+              <option value="Mathematics - Total">Mathematics</option>
+              <option value="Physical Sciences - Total">Physical Sciences</option>
+            </select>
+          <div id="race_gender_chart" style="width:100%; height:400px;">
+          </div>
         </div>
 
       </div>
      <hr>
 
       <footer>
-        <p><b>Dhairya Dalal</b> | Built using Bootstrap, JQUERY </p>
+        <p><b>Dhairya Dalal</b> | Built using Bootstrap, JQuery, JQueryUI and HighCharts.js </p>
       </footer>
 
 
