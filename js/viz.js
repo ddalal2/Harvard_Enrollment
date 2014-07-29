@@ -120,15 +120,14 @@ function create_gender_series(year, data) {
 function create_gr_series(year, field, data){
   var men_series = [];
   var women_series = [];
-  year = 2010;  
   var race_index = race_values[year];
   $.each(race_index, function(index, race){
           // For automation of pulling in race categories. Strip the word total at the end
           race_base = race.split("total")[0];
           //get totals by race for each gender
             try{
-               men_total = data[year]["Fields of Study"][field][race_base + "men"];
-               women_total = data[year]["Fields of Study"][field][race_base + "women"];
+                  men_total = data[year]["Fields of Study"][field][race_base + "men"];
+                  women_total = data[year]["Fields of Study"][field][race_base + "women"];
              }
              catch(err)
              {
@@ -161,7 +160,7 @@ function create_trend_chart(series){
             },
             xAxis: {
                 title :  {text: 'Fields of Study'},
-                categories: ['2006', '2008', '2010','2010']
+                categories: ['2006', '2008', '2010','2012']
             },
             yAxis: {
                 title: {text: 'Total Enrollment'},
